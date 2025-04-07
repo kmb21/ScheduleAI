@@ -18,18 +18,21 @@
 
 #### **Folder Structure Example**
 ```
-smart-schedule-extension
-├── manifest.json
-├── src
-│   ├── background.js (or background.ts)
-│   ├── contentScript.js (or contentScript.ts)
-│   ├── popup
-│   │   ├── Popup.jsx (if using React)
-│   │   ├── index.html
-│   │   └── popup.css
-│   └── utils
-│       └── nlpHelpers.js
-└── package.json
+smart-schedule-assistant/
+├── extension/                 # Everything for the browser extension
+│   ├── public/                # Icons, static HTML templates, etc.
+│   ├── src/
+│   │   ├── background/        # Background script(s), TS or JS
+│   │   ├── content/           # Content scripts for injected pages
+│   │   └── popup/             # React code for extension’s popup
+│   ├── manifest.json          # Chrome Extension manifest (V3)
+│   ├── package.json           # Dependencies for building the extension
+│   └── tsconfig.json          # TypeScript config for extension
+├── server/                    # Flask backend
+│   ├── app.py                 # Flask application entry
+│   ├── requirements.txt       # Python dependencies
+│   └── nlp.py (etc.)          # Additional modules for NLP, scheduling logic
+└── README.md                  # High-level project documentation
 ```
 
 ---
