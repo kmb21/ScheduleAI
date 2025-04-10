@@ -8,8 +8,7 @@ app = Flask(__name__)
 CORS(app, origins=["chrome-extension://<your-extension-id>"])
 
 
-api_key = "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"
-
+api_key = ""
 @app.route('/')
 def hello_world():
     return "Hello from Flask!"
