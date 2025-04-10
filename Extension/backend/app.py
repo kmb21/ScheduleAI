@@ -8,7 +8,7 @@ app = Flask(__name__)
 CORS(app, origins=["chrome-extension://<your-extension-id>"])
 
 
-my_key = ""
+title = ""
 @app.route('/')
 def hello_world():
     return "Hello from Flask!"
@@ -76,7 +76,7 @@ def parse_text():
     print("here")
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"Bearer {my_key}"
+        "Authorization": f"Bearer {title}"
     }
 
     payload = {
