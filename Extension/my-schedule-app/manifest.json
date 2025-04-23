@@ -1,29 +1,30 @@
 {
-    "name": "Smart Scheduling Assistant",
-    "version": "0.1.0",
-    "description": "A chatbot-like popup extension",
-    "manifest_version": 3,
-    "action": {
-      "default_popup": "index.html"
-    },
-    "background": {
-      "service_worker": "/src/background/background.js"
-    },
+  "manifest_version": 3,
+  "name": "Looma",
+  "version": "0.1.0",
+  "description": "Organize your events smarter",
+  "permissions": [
+    "scripting",
+    "tabs",
+    "activeTab",
+    "sidePanel"
+  ],
+"host_permissions": [
+    "http://localhost:5001/*",
+    "https://*/*",
+    "http://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Click to activate Looma!"
+  },
 
-    "permissions": [
-      "scripting",
-      "tabs",
-      "activeTab"
-    ],
-    "content_scripts": [
-      {
-        "matches": ["<all_urls>"],
-        "js": ["content.js"],
-        "run_at": "document_idle"
-      }
-    ]
-
+  "side_panel": {
+    "default_path": "src/panel.html",
+    "openPanelOnActionClick": true
   }
 
-
-  
+}

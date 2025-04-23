@@ -1,21 +1,14 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
-import { resolve, dirname } from 'path'
-import { fileURLToPath } from 'url'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
+import { resolve } from 'path'
 
 export default defineConfig({
   plugins: [
     react(),
     viteStaticCopy({
       targets: [
-        {
-          src: 'manifest.json', // copy from root
-          dest: '.'             // place in dist/
-        }
+        { src: 'manifest.json', dest: '.' },
       ]
     })
   ],
@@ -24,9 +17,8 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       input: {
-        popup: resolve(__dirname, 'src/index.html'),
-        content: resolve(__dirname, 'src/content/content.tsx'), 
-        background: resolve(__dirname, 'src/background/background.tsx') 
+        panel: resolve(__dirname, 'src/panel.html'), // ✅ <- this is the one for side panel!
+        background: resolve(__dirname, 'src/background/background.ts'),
       },
       output: {
         entryFileNames: '[name].js',

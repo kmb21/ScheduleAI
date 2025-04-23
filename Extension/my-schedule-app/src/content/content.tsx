@@ -1,99 +1,27 @@
-// // // src/content/content.tsx
 
-// // console.log("[Smart Scheduler] Content script running...")
+import { createRoot } from 'react-dom/client';
+import Sidebar from '../Sidebar/sidebar';
 
-// // function scrapePageText(): string {
-// //   const bodyText = document.body.innerText || ''
-// //   console.log("[Smart Scheduler] Scraped text:", bodyText)
+const containerId = "loom-extension-container";
 
-// //   document.body.style.border = '5px solid red'; // visible change
+if (!document.getElementById(containerId)) {
+  const container = document.createElement('div');
+  container.id = containerId;
+  container.style.position = 'fixed';
+  container.style.top = '70px';
+  container.style.right = '20px';
+  container.style.width = '360px';
+  container.style.height = 'auto';
+  container.style.backgroundColor = 'white';
+  container.style.border = '1px solid #ccc';
+  container.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+  container.style.zIndex = '999999';
+  container.style.borderRadius = '8px';
+  container.style.overflow = 'auto';
+  container.style.maxHeight = '90vh';
+  container.style.padding = '10px';
+  document.body.appendChild(container);
 
-// //   return bodyText
-// // }
-
-
-// // scrapePageText()
-// // // src/content/content.tsx
-
-// // chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-// //     if (message.type === 'SCRAPE_NOW') {
-// //       const bodyText = document.body.innerText || ''
-// //       console.log('[Content] Scraped text:', bodyText)
-  
-// //       sendResponse({ text: bodyText })
-// //       return true
-// //     }
-// //   })
-// function scrapePage() {
-//     // Basic example - customize for specific sites
-//     const pageContent = {
-//       url: window.location.href,
-//       title: document.title,
-//       text: document.body.innerText,
-//       html: document.documentElement.innerHTML,
-//       timestamp: new Date().toISOString()
-//     };
-    
-//     // For specific sites like Gmail
-//     if (window.location.hostname.includes('mail.google.com')) {
-//       pageContent.emails = Array.from(document.querySelectorAll('.zA')).map(el => ({
-//         subject: el.querySelector('.bog')?.textContent,
-//         sender: el.querySelector('.zF')?.textContent,
-//         snippet: el.querySelector('.y2')?.textContent
-//       }));
-//     }
-    
-//     // For Slack
-//     if (window.location.hostname.includes('slack.com')) {
-//       pageContent.messages = Array.from(document.querySelectorAll('.c-message')).map(el => ({
-//         sender: el.querySelector('.c-message__sender')?.textContent,
-//         content: el.querySelector('.c-message__body')?.textContent,
-//         timestamp: el.querySelector('.c-timestamp')?.textContent
-//       }));
-//     }
-    
-//     return pageContent;
-//   }
-  
-//   // Listen for scrape command
-//   chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
-//     if (request.action === 'scrape') {
-//       sendResponse(scrapePage());
-//     }
-//   });
-
-// content.tsx
-
-function scrapePage() {
-    const pageContent: any = {
-      url: window.location.href,
-      title: document.title,
-      text: document.body.innerText,
-      html: document.documentElement.innerHTML,
-      timestamp: new Date().toISOString(),
-    };
-  
-    if (window.location.hostname.includes("mail.google.com")) {
-      pageContent.emails = Array.from(document.querySelectorAll(".zA")).map((el) => ({
-        subject: el.querySelector(".bog")?.textContent,
-        sender: el.querySelector(".zF")?.textContent,
-        snippet: el.querySelector(".y2")?.textContent,
-      }));
-    }
-  
-    if (window.location.hostname.includes("slack.com")) {
-      pageContent.messages = Array.from(document.querySelectorAll(".c-message")).map((el) => ({
-        sender: el.querySelector(".c-message__sender")?.textContent,
-        content: el.querySelector(".c-message__body")?.textContent,
-        timestamp: el.querySelector(".c-timestamp")?.textContent,
-      }));
-    }
-  
-    return pageContent;
-  }
-  
-  // This function must be exported to be used with `chrome.scripting.executeScript`
-  export function scrapePageWrapper() {
-    return scrapePage();
-  }
-  
+  const root = createRoot(container);
+  root.render(<Sidebar />);
+}
