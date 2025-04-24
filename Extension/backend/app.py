@@ -14,40 +14,38 @@ CORS(app, origins=["chrome-extension://<your-extension-id>"])
 api_key = os.getenv("OPENAI_API_KEY")
 
 def _build_prompt(chunk:str)->str:
+    example_event = {
+    "event": "CS Department Info Session",
+    "raw_subject": "[Reminder] CS Dept Fall info session today!",
+    "time": {
+        "iso": "2025-04-10T16:30/2025-04-10T17:30",
+        "display": "April 10, 4:30 PM – 5:30 PM"
+    },
+    "context": "Fall course planning event in Sci 204",
+    "sender": "Chris Murphy",
+    "urgency": "high",
+    "gmailThread": "17a4c5f0b1c…"
+}
+    example_block = json.dumps({"events": [example_event]}, indent=2)
     return f"""
 Extract only scheduling-related information that a college student might reasonably want to add to their calendar.
-
-Include ONLY:
-- Events that involve participation: classes, talks, info sessions, office hours, interviews, workshops, deadlines, reminders, etc.
-- Events with a clear time or date mentioned.
-
-Exclude:
-- Advertisements, promotional content, livestreams, webinars from companies (e.g. Canva, LinkedIn, Amazon)
-- News, product launches, general updates, or generic reminders without a clear scheduling purpose
 
 Format each event as a JSON object with exactly these fields:
 - event: A short, cleaned title for the event (something nice to display to the user)
 - raw_subject: The original subject line from the message (to use it for identifying duplicates later)
-- time: Date and/or time (or "Not specified" if unclear)
+- time: ▸iso: A **single ISO-8601 string** that the UI can pass straight to Google Calendar  
+          • If you know both start and end →  `"YYYY-MM-DDTHH:MM/YYYY-MM-DDTHH:MM"`  
+          • If you know only the start → `"YYYY-MM-DDTHH:MM"`  
+          • If only a day is clear → `"YYYY-MM-DD"`  
+          • Otherwise output `"Not specified"`
+        ▸display: whatever is easiest for a person to read (e.g., “April 10, 4:30 PM”, “Every Tuesday, 1–2 PM”). If iso is "Not specified", set display to "Not specified" as well.
 - context: Brief description or purpose of the event
 - sender: Who sent or organized it
 - urgency: "high", "medium", or "low" (based on time sensitivity and proximity)
+- gmailThread: The thread ID of the email this event came from.
 
 Output ONLY a valid JSON object like this:
-{{
-  "events": [
-    {{
-      "event": "CS Department Info Session",
-      "raw_subject": "[All] [Reminder] CS Dept Fall info session today!",
-      "time": "April 10, 4:30pm",
-      "context": "Fall course planning event in Sci 204",
-      "sender": "Chris Murphy",
-      "urgency": "high",
-      "gmailMsgId": "17a4c5f0b1c…",        // empty string if unavailable
-      "gmailThread": "17a4c5f0b1c…"        // empty string if unavailable
-    }}
-  ]
-}}
+{example_block}
 
 FIELD RULES 
 •urgency  
@@ -89,7 +87,7 @@ def _ask_openai(prompt:str)->list[dict]:
                 "content": prompt
             }
         ],
-        "temperature": 0.2,
+        "temperature": 0.1,
         "max_tokens": 4096,
     }
     resp = requests.post(

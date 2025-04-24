@@ -26,12 +26,17 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 
             // 👇 SPECIAL CASE: If on Gmail, scrape emails!
             if (window.location.hostname.includes("mail.google.com")) {
-              pageContent.emails = Array.from(document.querySelectorAll(".zA")).map((el) => ({
-                subject: el.querySelector(".bog")?.textContent || '',
-                sender: el.querySelector(".zF")?.textContent || '',
-                snippet: el.querySelector(".y2")?.textContent || '',
-              }));
+              pageContent.emails = Array.from(document.querySelectorAll(".zA")).map((el) => {
+                const metaEl = el.querySelector('[data-legacy-thread-id]');
+                return {
+                  subject: el.querySelector(".bog")?.textContent || '',
+                  sender: el.querySelector(".zF")?.textContent || '',
+                  snippet: el.querySelector(".y2")?.textContent || '',
+                  gmailThread: metaEl?.getAttribute("data-legacy-thread-id") || '',
+                };
+              });
             }
+            
 
             return pageContent;
           }

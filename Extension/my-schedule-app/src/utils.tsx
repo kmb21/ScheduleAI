@@ -1,11 +1,14 @@
 export interface EventItem {
     event: string;
     raw_subject: string;
-    time: string;
+    time: {
+      iso: string;
+      display: string;
+    };
     context: string;
     sender: string;
     urgency: string;
-    
+    gmailThread?: string;
   }
 
 

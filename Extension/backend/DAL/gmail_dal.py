@@ -19,8 +19,9 @@ def build_email_blocks(emails):
         subject = email.get("subject", "No subject")
         sender = email.get("sender", "Unknown sender")
         snippet = email.get("snippet", "").replace('\xa0', ' ').replace('\u200c', '').replace('\ufeff', '').strip()
+        gmailThread = email.get("gmailThread", "")
 
-        block = f"From: {sender}\nSubject: {subject}\nSnippet: {snippet}"
+        block = f"gmailThread: {gmailThread}\nFrom: {sender}\nSubject: {subject}\nSnippet: {snippet}"
         blocks.append(block)
     return blocks
 
