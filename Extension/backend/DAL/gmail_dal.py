@@ -68,13 +68,54 @@ def init_db():
     c.execute('''
         CREATE TABLE IF NOT EXISTS events (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_email TEXT NOT NULL,
             raw_subject TEXT NOT NULL,
             sender TEXT NOT NULL,
-            UNIQUE(raw_subject, sender)
+            UNIQUE(user_email, raw_subject, sender)
+        )
+    ''')
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS contacts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_email TEXT NOT NULL,
+            contact_email TEXT NOT NULL,
+            contact_name TEXT,
+            frequency INTEGER DEFAULT 1,
+            UNIQUE(user_email, contact_email)
         )
     ''')
     conn.commit()
     conn.close()
+    
+    
+def save_contact(user_email, contact_email, contact_name=None):
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    try:
+        c.execute('''
+            INSERT INTO contacts (user_email, contact_email, contact_name, frequency)
+            VALUES (?, ?, ?, 1)
+            ON CONFLICT(user_email, contact_email)
+            DO UPDATE SET frequency = frequency + 1
+        ''', (user_email.lower(), contact_email.lower(), contact_name))
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def get_suggested_contacts(user_email, limit=5):
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute('''
+        SELECT contact_email, contact_name
+        FROM contacts
+        WHERE user_email = ?
+        ORDER BY frequency DESC
+        LIMIT ?
+    ''', (user_email.lower(), limit))
+    results = c.fetchall()
+    conn.close()
+    return results
 
 
 
