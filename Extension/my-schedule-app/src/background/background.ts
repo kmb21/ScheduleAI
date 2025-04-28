@@ -41,7 +41,9 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
             return pageContent;
           }
         });
+        const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
+        console.log('timezone', userTimeZone);
         const scrapedData = results[0]?.result;
         console.log('[Background] Scraped data:', scrapedData);
         sendResponse({ text: scrapedData });

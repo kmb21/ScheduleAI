@@ -79,7 +79,6 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_email TEXT NOT NULL,
             contact_email TEXT NOT NULL,
-            contact_name TEXT,
             frequency INTEGER DEFAULT 1,
             UNIQUE(user_email, contact_email)
         )
@@ -88,71 +87,90 @@ def init_db():
     conn.close()
     
     
-def save_contact(user_email, contact_email, contact_name=None):
+def save_contact(user_email, contact_email):
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
     try:
         c.execute('''
-            INSERT INTO contacts (user_email, contact_email, contact_name, frequency)
-            VALUES (?, ?, ?, 1)
+            INSERT INTO contacts (user_email, contact_email, frequency)
+            VALUES (?, ?, 1)
             ON CONFLICT(user_email, contact_email)
             DO UPDATE SET frequency = frequency + 1
-        ''', (user_email.lower(), contact_email.lower(), contact_name))
+        ''', (user_email.lower(), contact_email.lower()))
         conn.commit()
     finally:
         conn.close()
 
 
-def get_suggested_contacts(user_email, limit=5):
+def get_suggested_contacts(user_email, limit=None):
+    """Get suggested contacts, optionally limited by count.
+    
+    Args:
+        user_email: Email of the user whose contacts to fetch
+        limit: Maximum number of contacts to return (None for all contacts)
+    
+    Returns:
+        List of contact emails (or email/name tuples if selected)
+    """
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
-    c.execute('''
-        SELECT contact_email, contact_name
+    
+    query = '''
+        SELECT contact_email
         FROM contacts
         WHERE user_email = ?
         ORDER BY frequency DESC
-        LIMIT ?
-    ''', (user_email.lower(), limit))
+    '''
+    
+    params = (user_email.lower(),)
+    
+    if limit is not None:
+        query += ' LIMIT ?'
+        params += (limit,)
+    
+    c.execute(query, params)
     results = c.fetchall()
     conn.close()
-    return results
+    
+    # Return list of emails (unwrap single-element tuples)
+    return [row[0] for row in results]
 
 
 
-def save_event(raw_subject, sender):
+def save_event(user_email, raw_subject, sender):
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
     try:
         c.execute('''
-            INSERT OR IGNORE INTO events (raw_subject, sender)
-            VALUES (?, ?)
-        ''', (raw_subject.strip().lower(), sender.strip().lower()))
+            INSERT OR IGNORE INTO events (user_email, raw_subject, sender)
+            VALUES (?, ?, ?)
+        ''', (user_email.strip().lower(), raw_subject.strip().lower(), sender.strip().lower()))
         conn.commit()
     finally:
         conn.close()
+        
 
 
-def event_seen(raw_subject, sender):
+def event_seen(user_email, raw_subject, sender):
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
     c.execute('''
         SELECT 1 FROM events
-        WHERE raw_subject = ? AND sender = ?
-    ''', (raw_subject.strip().lower(), sender.strip().lower()))
+        WHERE user_email = ? AND raw_subject = ? AND sender = ?
+    ''', (user_email.strip().lower(), raw_subject.strip().lower(), sender.strip().lower()))
     result = c.fetchone()
     conn.close()
     return result is not None
 
 
-def remove_duplicates(events):
+def remove_duplicates(user_email, events):
     unique_events = []
     for event in events:
-        if not event_seen(event['raw_subject'], event['sender']):
-            save_event(event['raw_subject'], event['sender'])
+        if not event_seen(user_email, event['raw_subject'], event['sender']):
+            save_event(user_email, event['raw_subject'], event['sender'])
             unique_events.append(event)
         else:
             print(f"Duplicate found and removed: {event['raw_subject']} from {event['sender']}")
-
     return unique_events
 
 

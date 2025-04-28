@@ -40,3 +40,41 @@ export const TodayIcon: React.FC = () => {
     </span>
   );
 };
+
+
+export const freeTextToGcal = (e: {event: string, time: any, context?: string, participants?: string[];}) => {
+  const title   = encodeURIComponent(e.event);
+  const details = encodeURIComponent(e.context ?? '');
+  const location = encodeURIComponent('');
+  const guests = e.participants 
+
+  let start: string = '';
+  let end: string | null = null;
+
+  if (e.time?.iso && e.time.iso.includes('/')) {
+    const [startStr, endStr] = e.time.iso.split('/');
+    start = startStr.replace(/[-:.]/g, '').slice(0, 15);
+    end = endStr.replace(/[-:.]/g, '').slice(0, 15);
+  } else if (e.time?.iso && e.time.iso.length >= 16) {
+    start = e.time.iso.replace(/[-:.]/g, '').slice(0, 15);
+    end = new Date(new Date(e.time.iso).getTime() + 60 * 60 * 1000)
+             .toISOString().replace(/[-:.]/g, '').slice(0, 15);
+  } else if (e.time?.iso) {
+    start = e.time.iso.replace(/-/g, '');
+    end = null;
+  } else {
+    const now = new Date();
+    start = now.toISOString().replace(/[-:.]/g, '').slice(0, 15);
+    end = new Date(now.getTime() + 60 * 60 * 1000)
+             .toISOString().replace(/[-:.]/g, '').slice(0, 15);
+  }
+
+  const dateParam = end ? `${start}/${end}` : start;
+
+  window.open(
+    `https://calendar.google.com/calendar/r/eventedit?text=${title}` +
+    `&details=${details}&location=${location}&dates=${dateParam}` +
+    (guests ? `&add=${guests}` : ''),
+    '_blank'
+  );
+};
